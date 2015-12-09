@@ -8,7 +8,7 @@ package org.icepdf.ri.common;
  **/
 
 public class SwingDictionaryBuilder{
-
+/*
 	public void buildDictionaryFrame(){
 		JFrame dictionaryFrame = new JFrame(new BorderLayout());
 		dictionaryFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -22,8 +22,5 @@ public class SwingDictionaryBuilder{
 
 		return dictionaryFrame;
 	}
-
-	
-
-	
+*/	
 }

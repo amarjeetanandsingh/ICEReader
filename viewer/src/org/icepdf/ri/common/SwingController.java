@@ -3680,6 +3680,34 @@ public class SwingController
     }
 
     /**
+    * MouseListener to envoke dictionary on double click.
+    *
+    
+    public void mousePressed(MouseEvent e) {
+    }
+
+    public void mouseReleased(MouseEvent e) {
+    }
+
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    public void mouseExited(MouseEvent e) {
+    }
+
+    public void mouseClicked(MouseEvent e) {
+        if(e.getClickCount() == 2){
+            showDictionaryPane();
+        }
+    }
+
+*/
+
+
+
+
+
+    /**
      * Method to try to read any ViewerPreferences present in the document, and apply them
      * Otherwise we will try to check the properties file for any overriding to these values
      *

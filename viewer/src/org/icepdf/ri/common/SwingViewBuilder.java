@@ -16,7 +16,10 @@
 package org.icepdf.ri.common;
 
 import apple.dts.samplecode.osxadapter.OSXAdapter;
+
 import org.icepdf.core.util.Defs;
+import org.icepdf.ri.common.DictionaryPane;
+import org.icepdf.ri.common.SwingController;
 import org.icepdf.ri.common.utility.annotation.AnnotationPanel;
 import org.icepdf.ri.common.utility.layers.LayersPanel;
 import org.icepdf.ri.common.utility.outline.OutlinesTree;
@@ -28,6 +31,7 @@ import org.icepdf.ri.images.Images;
 import org.icepdf.ri.util.PropertiesManager;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.text.NumberFormat;
@@ -414,6 +418,7 @@ public class SwingViewBuilder {
 
         messageBundle = viewerController.getMessageBundle();
 
+        
         if (properties != null) {
             viewerController.setPropertiesManager(properties);
             this.propertiesManager = properties;
@@ -493,6 +498,8 @@ public class SwingViewBuilder {
         // code entry point.
         JSplitPane utilAndDocSplit =
                 buildUtilityAndDocumentSplitPane(embeddableComponent);
+        
+        
         if (utilAndDocSplit != null)
             cp.add(utilAndDocSplit, BorderLayout.CENTER);
         JPanel statusPanel = buildStatusPanel();
@@ -976,11 +983,6 @@ public class SwingViewBuilder {
         mi.setMnemonic(buildMnemonic(messageBundle.getString("viewer.menu.dictionary.searchDictionary.mnemonic").charAt(0)));
         if (viewerController != null)
             viewerController.setSearchDictionaryMenuItem(mi);
-        mi.addActionListener(new ActionListener(){
-            public void actionPerformed(ActionEvent event){
-                DictionaryPane.start();
-            }
-        });
         return mi;
     }
 
@@ -1690,17 +1692,28 @@ public class SwingViewBuilder {
         splitpane.setLeftComponent(buildUtilityTabbedPane());
 
         // set the viewController embeddable flag.
-        DocumentViewController viewController =
-                viewerController.getDocumentViewController();
+        DocumentViewController viewController = viewerController.getDocumentViewController();
+        
         // will add key event listeners
         viewerController.setIsEmbeddedComponent(embeddableComponent);
-
+        
+      /*  // add mouse double click listener.
+        splitpane.getRightComponent().addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e){
+                if(e.getClickCount() == 2){
+                    viewerController.showDictionaryPane();
+                }
+            }
+        });
+        
+        */
         // remove F6 focus management key from the splitpane
         splitpane.getActionMap().getParent().remove("toggleFocus");
 
         // add the viewControllers doc view container to the split pain
         splitpane.setRightComponent(viewController.getViewContainer());
 
+        
         // apply previously set divider location, default is -1
         int dividerLocation = PropertiesManager.checkAndStoreIntegerProperty(
                 propertiesManager,

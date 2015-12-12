@@ -48,6 +48,7 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -70,7 +71,9 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.swing.*;
+
 import static java.awt.GraphicsDevice.WindowTranslucency.*;
 
 /**
@@ -266,8 +269,19 @@ public class SwingController
 
     public SwingController(ResourceBundle messageBundle) {
         viewModel = new ViewModel();
+
         // page view controller
         documentViewController = new DocumentViewControllerImpl(this);
+        
+        // add mouse double click
+        /*documentViewController.getViewContainer().addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e){
+                if(e.getClickCount() == 2){
+                    showDictionaryPane();
+                }
+            }
+        });*/
+        
         // document search controller.
         documentSearchController = new DocumentSearchControllerImpl(this);
 
@@ -1024,9 +1038,44 @@ public class SwingController
         if (embeddableComponent) {
             documentViewController.setViewKeyListener(this);
             documentViewController.getViewContainer().addKeyListener(this);
+            
+            /*documentViewController.getViewContainer().addMouseListener(new MouseAdapter() {
+                public void mouseClicked(MouseEvent e){
+                    if(e.getClickCount() == 2){
+                        showDictionaryPane();
+                    }
+                }
+            });*/
+        }
+     
+    }
+    
+    /*
+   
+    // implementing for being mouseListener
+    
+    public void mousePressed(MouseEvent e) {
+     }
+
+     public void mouseReleased(MouseEvent e) {
+     }
+
+     public void mouseEntered(MouseEvent e) {
+     }
+
+     public void mouseExited(MouseEvent e) {
+     }
+
+     public void mouseClicked(MouseEvent e){
+        if(e.getClickCount() == 2){
+            showDictionaryPane();
         }
     }
-
+    
+    */
+    
+    
+    
     /**
      * Called by SwingViewerBuilder, so that SwingController can setup event handling
      */
@@ -1051,6 +1100,17 @@ public class SwingController
      */
     public void setViewerFrame(JFrame v) {
         viewer = v;
+        
+     // add mouse double click
+        viewer.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e){
+                if(e.getClickCount() == 2){
+                    showDictionaryPane();
+                }
+            }
+        });
+        
+        
         viewer.addWindowListener(this);
         // add drag and drop listeners
         new DropTarget(viewer, // component
@@ -1535,6 +1595,14 @@ public class SwingController
 //        }
         if (viewer != null)
             viewer.setCursor(cursor);
+        // add mouse double click listener
+        viewer.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e){
+                if(e.getClickCount() == 2){
+                    showDictionaryPane();
+                }
+            } 
+        });
     }
 
     /**
@@ -2213,7 +2281,7 @@ public class SwingController
 
         // initiates the view layout model, page coordinates and preferred size
         documentViewController.setDocument(document);
-
+        
         if (layersPanel != null) {
             layersPanel.setDocument(document);
         }
@@ -3676,9 +3744,14 @@ public class SwingController
     *
     */
     public void showDictionaryPane(){
-        DictionaryPane.start();
+        DictionaryPane.start(   documentViewController, 
+                                documentViewController.getSelectedText());
     }
 
+    public static void showDictionaryPane(DocumentViewControllerImpl documentViewController){
+        DictionaryPane.start( documentViewController, 
+                                documentViewController.getSelectedText());
+    }
     /**
     * MouseListener to envoke dictionary on double click.
     *

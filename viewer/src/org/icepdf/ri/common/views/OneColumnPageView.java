@@ -15,12 +15,15 @@
  */
 package org.icepdf.ri.common.views;
 
-import org.icepdf.ri.common.CurrentPageChanger;
+import org.icepdf.ri.common.*;
 import org.icepdf.ri.common.KeyListenerPageColumnChanger;
 import org.icepdf.ri.common.SwingController;
+import org.icepdf.ri.common.views.DocumentViewControllerImpl;
 
 import javax.swing.*;
+
 import java.awt.*;
+import java.awt.event.*;
 import java.util.List;
 
 
@@ -46,14 +49,14 @@ public class OneColumnPageView extends AbstractDocumentView {
     protected CurrentPageChanger currentPageChanger;
 
     protected KeyListenerPageColumnChanger keyListenerPageChanger;
-
+    
     public OneColumnPageView(DocumentViewController documentDocumentViewController,
                              JScrollPane documentScrollpane,
                              DocumentViewModelImpl documentViewModel) {
-
+        
         super(documentDocumentViewController, documentScrollpane, documentViewModel);
-
-        // used to redirect mouse events
+        
+ // used to redirect mouse events
         this.documentScrollpane = documentScrollpane;
 
         // put all the gui elements together
@@ -76,6 +79,17 @@ public class OneColumnPageView extends AbstractDocumentView {
     private void buildGUI() {
         // add all page components to grid layout panel
         pagesPanel = new JPanel();
+        
+        
+        // add double mouse click listener.
+        pagesPanel.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e){
+                if(e.getClickCount() == 2){
+                    DictionaryPane.start();
+                }
+            }
+        });
+        
         pagesPanel.setBackground(backgroundColor);
         // one column equals single page view continuous
         GridLayout gridLayout = new GridLayout(0, 1, horizontalSpace, verticalSpace);

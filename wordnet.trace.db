@@ -56,3 +56,15 @@ select synset_id from wn_synset where word='' [42102-190]
 2015-12-09 01:46:41 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLException: Table "WN_SYNSET" not found; SQL statement:
 select synset_id from wn_synset where word='' [42102-190]
+2015-12-09 15:54:27 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Table "WN_SYNSET" not found; SQL statement:
+select synset_id from wn_synset where word=' ' [42102-190]
+2015-12-09 15:56:56 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Table "WN_SYNSET" not found; SQL statement:
+select synset_id from wn_synset where word=' ' [42102-190]
+2015-12-09 16:00:45 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Table "WN_SYNSET" not found; SQL statement:
+select synset_id from wn_synset where word='' [42102-190]
+2015-12-09 16:01:01 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLException: Table "WN_SYNSET" not found; SQL statement:
+select synset_id from wn_synset where word='go' [42102-190]

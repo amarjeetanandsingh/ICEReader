@@ -1,6 +1,5 @@
 package org.icepdf.ri.common;
 
-
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
@@ -8,34 +7,54 @@ import javax.swing.*;
 import javax.swing.text.*;
 import java.sql.*;
 import java.util.*;
+import org.icepdf.ri.common.views.*;
 import static java.awt.GraphicsDevice.WindowTranslucency.*;
 
 public class DictionaryPane extends JFrame implements ActionListener {
 
-    protected static int windowCount = 0;
+    // a variable to track the WORD whose meaning is currently displayed in pane.
+    protected String currentWord = "";
     protected JButton btnClose = new JButton("Close");
     protected JButton btnSearch = new JButton("Search");
     protected JTextField searchWordTextField = new JTextField(10);
     protected JTextPane resultTextPane = new JTextPane();
     protected JScrollPane scrollPane = new JScrollPane(resultTextPane);
-
+    protected DocumentViewControllerImpl documentViewController;
     final int DEFAULT_FONT_SIZE = 13;
     final int WINDOW_WIDTH = 300;
     final int WINDOW_HEIGHT = 300;
-    
-    public DictionaryPane() {
-        addComponentListener(new ComponentAdapter() {
+
+    // starting DictionaryPane windows on the event-dispatching thread
+    public static void start(){
+        start(null, "");
+    }
+
+    public static void start(   final DocumentViewControllerImpl documentViewController,
+                                final String word ){
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                DictionaryPane dictionaryPane = new DictionaryPane();
+                dictionaryPane.documentViewController = documentViewController;
+                dictionaryPane.createGui();
+                dictionaryPane.setMeaningToJTextPane(word);
+            }
+        });
+    }
+
+    // create gui for Dictionary.
+    public void createGui(){
+        this.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
                 setShape(new RoundRectangle2D.Double(0, 0,getWidth(),getHeight(),15,15));
             }
         });
 
-        setUndecorated(true);
-        setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-        setLocationRelativeTo(null);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout());
+//        this.setUndecorated(true);
+        this.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+        this.setLocationRelativeTo(null);
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        this.setLayout(new BorderLayout());
 
         // set the starting location of DictionaryPane relative to mouse_current_position.
         Point mouseLocation = MouseInfo.getPointerInfo().getLocation();
@@ -59,9 +78,9 @@ public class DictionaryPane extends JFrame implements ActionListener {
         }else{
             locationY = y - 325;
         }
-        setLocation(locationX, locationY);
+        this.setLocation(locationX, locationY);
 
-        getContentPane().add(scrollPane);
+        this.getContentPane().add(scrollPane);
         JPanel bottomPanel = new JPanel(new FlowLayout());
         bottomPanel.add(searchWordTextField);
 
@@ -71,40 +90,36 @@ public class DictionaryPane extends JFrame implements ActionListener {
         btnClose.addActionListener(this);
         bottomPanel.add(btnClose);
 
-        add(bottomPanel, BorderLayout.SOUTH);
-    }
+        this.add(bottomPanel, BorderLayout.SOUTH);
+        this.setVisible(true);
+        this.setAlwaysOnTop(true);
 
-    // starting DictionaryPane windows on the event-dispatching thread
-    public static void start(){
-        if(++windowCount == 1){    
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    DictionaryPane dictionaryPane = new DictionaryPane();
-                    dictionaryPane.setVisible(true);
-                    dictionaryPane.setMeaningToJTextPane();
-                }
-            });
-        }
     }
 
     public void actionPerformed(ActionEvent event) {
-        if (event.getSource() == btnClose){        
-            windowCount--;
+        if (event.getSource() == btnClose){ 
             this.dispose();
         }else if(event.getSource() == btnSearch) {
-            resultTextPane.setText("");
             setMeaningToJTextPane();
         }else{
 
         }
     }
 
-
     public void setMeaningToJTextPane(){
-         setMeaningToJTextPane(searchWordTextField.getText());
+        if( currentWord.trim().equals(searchWordTextField.getText().trim()) &&
+            !currentWord.trim().equals(documentViewController.getSelectedText().trim())){
+                setMeaningToJTextPane(documentViewController.getSelectedText().trim());
+        }else if( !currentWord.equals(searchWordTextField.getText().trim())){
+            setMeaningToJTextPane(searchWordTextField.getText().trim());
+        }
     }
 
     public void setMeaningToJTextPane(String word){
+        currentWord = word;
+        searchWordTextField.setText(word);
+        resultTextPane.setText("");
+
         try {
             Class.forName("org.h2.Driver");
             Connection conn = DriverManager.getConnection("jdbc:h2:./wordnet","sa","");
@@ -112,9 +127,12 @@ public class DictionaryPane extends JFrame implements ActionListener {
             StyledDocument doc = (StyledDocument)resultTextPane.getDocument();
             Style style = doc.addStyle("h1", null);
 
-            StringBuilder meaning = new StringBuilder(getGloss(conn,word));
+            // set word heading.
+            doc.insertString(doc.getLength(), currentWord, setStyleH1(style));
+
+            StringBuilder meaning = new StringBuilder(getGloss(conn,word.trim()));
             String [] lines = meaning.toString().split("\n");
-            
+
             for (String line : lines) {
                 if(line.indexOf("; \"") == -1){ // if ; doesn't exist in this meaning => no example.
                     doc.insertString(doc.getLength(),"\n"+line, setStyleMeaning(style));
@@ -142,10 +160,22 @@ public class DictionaryPane extends JFrame implements ActionListener {
         }
     }
 
+    // create style to be added to document for the h1 word headings.
+    private Style setStyleH1(Style style) {
+        StyleConstants.setFontSize(style, (int)(DEFAULT_FONT_SIZE*1.6));
+        StyleConstants.setBold(style, Boolean.TRUE);
+        StyleConstants.setUnderline(style, Boolean.TRUE);
+        StyleConstants.setItalic(style, Boolean.FALSE);
+        StyleConstants.setLeftIndent(style, (int)(0.15*WINDOW_WIDTH));
+        StyleConstants.setForeground(style, Color.BLACK);
+        return style;
+    }
+
     // create style to be added to document for the meanings.
     private Style setStyleMeaning(Style style) {
         StyleConstants.setFontSize(style, DEFAULT_FONT_SIZE);
         StyleConstants.setBold(style, Boolean.FALSE);
+        StyleConstants.setUnderline(style, Boolean.FALSE);
         StyleConstants.setItalic(style, Boolean.FALSE);
         StyleConstants.setLeftIndent(style, (int)(0.15*WINDOW_WIDTH));
         StyleConstants.setForeground(style, Color.BLACK);
@@ -156,6 +186,7 @@ public class DictionaryPane extends JFrame implements ActionListener {
     private Style setStyleExample(Style style) {
         StyleConstants.setFontSize(style, DEFAULT_FONT_SIZE);
         StyleConstants.setBold(style, Boolean.FALSE);
+        StyleConstants.setUnderline(style, Boolean.FALSE);
         StyleConstants.setItalic(style, Boolean.TRUE);
         StyleConstants.setLeftIndent(style, (int)(0.15*WINDOW_WIDTH));
         StyleConstants.setForeground(style, Color.gray );
@@ -164,7 +195,8 @@ public class DictionaryPane extends JFrame implements ActionListener {
 
     // fetch gloss for the given word from database.
     public static String getGloss(Connection conn, String word) throws SQLException{
-
+        // sanitize the input word to be searched.
+        word = word.trim().toLowerCase();
         StringBuilder result = new StringBuilder("");
         long startTime = System.currentTimeMillis();
 

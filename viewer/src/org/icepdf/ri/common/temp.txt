@@ -1,0 +1,20 @@
+documentViewController.getSelectedText() // in SwingController.java
+
+
+
+        // add mouse double click event to open Dictionary pane.
+        viewerController.addMouseListener(new MouseAdapter() {
+        	public void mouseClicked(MouseEvent e){
+        		if(e.getClickCount() == 2){
+        			SwingController.showDictionaryPane();
+        		}
+        	}
+		});
+
+
+
+
+		/// make jtextPane scroll false
+		JTextArea textArea = new JTextArea();
+DefaultCaret caret = (DefaultCaret)textArea.getCaret();
+caret.setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
